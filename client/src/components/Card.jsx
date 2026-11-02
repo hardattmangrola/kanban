@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { useTaskStore } from '../store/useTaskStore.js';
+import { Button } from './ui/Button.jsx';
+import { Badge } from './ui/Badge.jsx';
 import {
   CheckSquare,
   Square,
@@ -13,27 +15,6 @@ import {
   GripVertical,
   ListTodo,
 } from 'lucide-react';
-
-const priorityConfig = {
-  High: {
-    bg: 'bg-rose-50 dark:bg-rose-950/80',
-    text: 'text-rose-700 dark:text-rose-300',
-    border: 'border-rose-200 dark:border-rose-800',
-    indicator: 'bg-rose-500',
-  },
-  Medium: {
-    bg: 'bg-amber-50 dark:bg-amber-950/80',
-    text: 'text-amber-800 dark:text-amber-300',
-    border: 'border-amber-200 dark:border-amber-800',
-    indicator: 'bg-amber-500',
-  },
-  Low: {
-    bg: 'bg-emerald-50 dark:bg-emerald-950/80',
-    text: 'text-emerald-700 dark:text-emerald-300',
-    border: 'border-emerald-200 dark:border-emerald-800',
-    indicator: 'bg-emerald-500',
-  },
-};
 
 const columnOrder = ['todo', 'in-progress', 'done'];
 
@@ -82,165 +63,158 @@ export const Card = ({ task, isDragging, onDragStart, onDragEnd }) => {
     setShowSubtaskInput(false);
   };
 
-  const priorityStyle = priorityConfig[task.priority] || priorityConfig.Medium;
+  const priorityVariant =
+    task.priority === 'High'
+      ? 'high'
+      : task.priority === 'Medium'
+      ? 'medium'
+      : 'low';
 
   return (
     <div
       draggable
       onDragStart={(e) => onDragStart(e, task)}
       onDragEnd={onDragEnd}
-      className={`group relative bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-4 shadow-sm hover:shadow-md transition-all duration-200 cursor-grab active:cursor-grabbing ${
-        isDragging ? 'opacity-40 scale-95 border-dashed border-indigo-400' : ''
+      className={`group relative bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800 p-3.5 shadow-sm hover:border-zinc-300 dark:hover:border-zinc-700 transition-all duration-150 cursor-grab active:cursor-grabbing ${
+        isDragging ? 'opacity-40 scale-[0.98] border-dashed border-zinc-400 dark:border-zinc-600' : ''
       }`}
     >
-      {/* Top Header: Priority Badge, Subtask Pill & Quick Controls */}
-      <div className="flex items-center justify-between gap-2 mb-2.5">
+      {/* Top Row: Priority Badge, Subtask Counter & Card Controls */}
+      <div className="flex items-center justify-between gap-2 mb-2">
         <div className="flex items-center gap-1.5 flex-wrap">
-          {/* Priority Badge */}
-          <span
-            className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[11px] font-semibold border ${priorityStyle.bg} ${priorityStyle.text} ${priorityStyle.border}`}
-          >
-            <span className={`w-1.5 h-1.5 rounded-full ${priorityStyle.indicator}`} />
+          {/* Priority Badge - Retains Semantic Color */}
+          <Badge variant={priorityVariant} className="font-semibold text-[10px] tracking-wide">
             {task.priority}
-          </span>
+          </Badge>
 
-          {/* Quick Subtask Counter Badge */}
+          {/* Subtask pill badge */}
           {totalSubtasks > 0 && (
             <button
               onClick={() => setIsExpanded(!isExpanded)}
-              className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[11px] font-medium transition-colors ${
-                progressPercent === 100
-                  ? 'bg-emerald-50 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800'
-                  : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700'
-              }`}
-              title="Click to view checklist items"
+              className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-mono font-medium bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors"
+              title="Toggle checklist"
             >
-              <ListTodo className="w-3 h-3" />
+              <ListTodo className="w-2.5 h-2.5" />
               <span>{completedCount}/{totalSubtasks}</span>
             </button>
           )}
 
-          <span className="text-[11px] text-slate-400 dark:text-slate-500 font-mono">
+          <span className="text-[10px] text-zinc-400 dark:text-zinc-500 font-mono">
             #{task.position + 1}
           </span>
         </div>
 
-        <div className="flex items-center gap-1">
-          {/* Quick column navigation buttons */}
+        <div className="flex items-center gap-0.5 opacity-80 group-hover:opacity-100 transition-opacity">
           {canMoveLeft && (
-            <button
+            <Button
+              variant="ghost"
+              size="icon"
               onClick={handleMoveLeft}
-              className="p-1 rounded text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
-              title="Move left to previous column"
-              aria-label="Move left"
+              className="h-6 w-6 text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100"
+              title="Move to previous column"
             >
-              <ChevronLeft className="w-3.5 h-3.5" />
-            </button>
+              <ChevronLeft className="w-3 h-3" />
+            </Button>
           )}
 
           {canMoveRight && (
-            <button
+            <Button
+              variant="ghost"
+              size="icon"
               onClick={handleMoveRight}
-              className="p-1 rounded text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
-              title="Move right to next column"
-              aria-label="Move right"
+              className="h-6 w-6 text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100"
+              title="Move to next column"
             >
-              <ChevronRight className="w-3.5 h-3.5" />
-            </button>
+              <ChevronRight className="w-3 h-3" />
+            </Button>
           )}
 
-          {/* Edit Button */}
-          <button
+          <Button
+            variant="ghost"
+            size="icon"
             onClick={() => openEditModal(task)}
-            className="p-1 rounded text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+            className="h-6 w-6 text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100"
             title="Edit task"
-            aria-label="Edit task"
           >
-            <Edit2 className="w-3.5 h-3.5" />
-          </button>
+            <Edit2 className="w-3 h-3" />
+          </Button>
 
-          {/* Delete Button */}
-          <button
+          <Button
+            variant="ghost"
+            size="icon"
             onClick={() => deleteTask(task._id)}
-            className="p-1 rounded text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+            className="h-6 w-6 text-zinc-400 hover:text-rose-600 dark:hover:text-rose-400"
             title="Delete task"
-            aria-label="Delete task"
           >
-            <Trash2 className="w-3.5 h-3.5" />
-          </button>
+            <Trash2 className="w-3 h-3" />
+          </Button>
 
-          {/* Drag Handle Icon for visual clarity */}
-          <span className="text-slate-300 dark:text-slate-600 group-hover:text-slate-500 transition-colors cursor-grab ml-1">
-            <GripVertical className="w-4 h-4" />
+          <span className="text-zinc-300 dark:text-zinc-600 group-hover:text-zinc-500 transition-colors ml-0.5 cursor-grab">
+            <GripVertical className="w-3.5 h-3.5" />
           </span>
         </div>
       </div>
 
-      {/* Title */}
-      <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-100 leading-snug mb-1.5">
+      {/* Task Title */}
+      <h3 className="text-xs font-semibold text-zinc-900 dark:text-zinc-100 leading-snug mb-1">
         {task.title}
       </h3>
 
       {/* Description */}
       {task.description && (
-        <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-2 mb-3 leading-relaxed">
+        <p className="text-[11px] text-zinc-500 dark:text-zinc-400 line-clamp-2 mb-2 leading-relaxed font-normal">
           {task.description}
         </p>
       )}
 
-      {/* WILDCARD FEATURE (Option 3): Nested Checklist & Progress */}
+      {/* Subtasks Progress Bar & Checklist */}
       {totalSubtasks > 0 && (
-        <div className="mt-3 pt-2.5 border-t border-slate-100 dark:border-slate-800/80">
-          <div className="flex items-center justify-between text-xs mb-1.5">
+        <div className="mt-2.5 pt-2 border-t border-zinc-100 dark:border-zinc-800">
+          <div className="flex items-center justify-between text-[11px] mb-1.5">
             <button
               onClick={() => setIsExpanded(!isExpanded)}
-              className="flex items-center gap-1.5 font-medium text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
-              aria-expanded={isExpanded}
+              className="flex items-center gap-1 font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors"
             >
               {isExpanded ? (
-                <ChevronUp className="w-3.5 h-3.5" />
+                <ChevronUp className="w-3 h-3" />
               ) : (
-                <ChevronDown className="w-3.5 h-3.5" />
+                <ChevronDown className="w-3 h-3" />
               )}
-              <span>Checklist</span>
-              <span className="text-[11px] font-mono text-slate-400">
+              <span>Subtasks</span>
+              <span className="font-mono text-zinc-400">
                 ({completedCount}/{totalSubtasks})
               </span>
             </button>
             <span
-              className={`text-[11px] font-semibold font-mono ${
+              className={`font-mono text-[10px] font-semibold ${
                 progressPercent === 100
                   ? 'text-emerald-600 dark:text-emerald-400'
-                  : 'text-indigo-600 dark:text-indigo-400'
+                  : 'text-zinc-700 dark:text-zinc-300'
               }`}
             >
               {progressPercent}%
             </span>
           </div>
 
-          {/* Animated Progress Bar */}
-          <div className="w-full h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+          {/* Animated Progress Bar (Retains emerald indicator on 100%) */}
+          <div className="w-full h-1 bg-zinc-100 dark:bg-zinc-800 rounded-full overflow-hidden">
             <div
-              className={`h-full transition-all duration-500 ease-out rounded-full ${
+              className={`h-full transition-all duration-300 ease-out rounded-full ${
                 progressPercent === 100
                   ? 'bg-emerald-500'
-                  : 'bg-gradient-to-r from-indigo-500 to-indigo-600'
+                  : 'bg-zinc-900 dark:bg-zinc-100'
               }`}
               style={{ width: `${progressPercent}%` }}
-              role="progressbar"
-              aria-valuenow={progressPercent}
-              aria-valuemin="0"
-              aria-valuemax="100"
             />
           </div>
 
           {/* Expandable Checklist Items List */}
           {isExpanded && (
-            <div className="mt-2.5 space-y-1.5 animate-fade-in">
+            <div className="mt-2 space-y-1 animate-fade-in">
               {subtasks.map((sub) => (
                 <div
                   key={sub._id}
-                  className="flex items-center justify-between gap-2 p-1.5 rounded-md hover:bg-slate-50 dark:hover:bg-slate-800/50 group/sub text-xs transition-colors"
+                  className="flex items-center justify-between gap-2 py-1 px-1.5 rounded hover:bg-zinc-50 dark:hover:bg-zinc-800/50 group/sub text-[11px] transition-colors"
                 >
                   <label className="flex items-center gap-2 cursor-pointer flex-1 min-w-0">
                     <input
@@ -254,13 +228,13 @@ export const Card = ({ task, isDragging, onDragStart, onDragEnd }) => {
                     {sub.isCompleted ? (
                       <CheckSquare className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
                     ) : (
-                      <Square className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                      <Square className="w-3.5 h-3.5 text-zinc-400 shrink-0" />
                     )}
                     <span
-                      className={`truncate transition-all duration-200 ${
+                      className={`truncate ${
                         sub.isCompleted
-                          ? 'line-through text-slate-400 dark:text-slate-500'
-                          : 'text-slate-700 dark:text-slate-200'
+                          ? 'line-through text-zinc-400 dark:text-zinc-500'
+                          : 'text-zinc-700 dark:text-zinc-200'
                       }`}
                     >
                       {sub.title}
@@ -268,46 +242,44 @@ export const Card = ({ task, isDragging, onDragStart, onDragEnd }) => {
                   </label>
                   <button
                     onClick={() => deleteSubtask(task._id, sub._id)}
-                    className="opacity-0 group-hover/sub:opacity-100 text-slate-400 hover:text-rose-500 transition-opacity p-0.5"
+                    className="opacity-0 group-hover/sub:opacity-100 text-zinc-400 hover:text-rose-500 transition-opacity p-0.5"
                     title="Delete subtask"
-                    aria-label={`Delete subtask ${sub.title}`}
                   >
                     <Trash2 className="w-3 h-3" />
                   </button>
                 </div>
               ))}
 
-              {/* Quick Add Subtask Form */}
+              {/* Quick Add Subtask Input */}
               {showSubtaskInput ? (
-                <form onSubmit={handleAddSubtask} className="flex items-center gap-1.5 mt-2">
+                <form onSubmit={handleAddSubtask} className="flex items-center gap-1.5 mt-1.5">
                   <input
                     type="text"
                     value={newSubtaskTitle}
                     onChange={(e) => setNewSubtaskTitle(e.target.value)}
-                    placeholder="Subtask name..."
-                    className="flex-1 text-xs px-2 py-1 rounded border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                    placeholder="New subtask..."
+                    className="flex-1 text-[11px] px-2 py-1 rounded border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-1 focus:ring-zinc-950 dark:focus:ring-zinc-300"
                     autoFocus
                   />
-                  <button
-                    type="submit"
-                    className="px-2 py-1 text-xs font-medium rounded bg-indigo-600 text-white hover:bg-indigo-700"
-                  >
+                  <Button type="submit" size="sm" className="h-6 px-2 text-[10px]">
                     Add
-                  </button>
-                  <button
+                  </Button>
+                  <Button
                     type="button"
+                    variant="ghost"
+                    size="sm"
                     onClick={() => setShowSubtaskInput(false)}
-                    className="px-2 py-1 text-xs text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
+                    className="h-6 px-1.5 text-[10px] text-zinc-400 hover:text-zinc-600"
                   >
                     Cancel
-                  </button>
+                  </Button>
                 </form>
               ) : (
                 <button
                   onClick={() => setShowSubtaskInput(true)}
-                  className="flex items-center gap-1 text-[11px] font-medium text-indigo-600 dark:text-indigo-400 hover:underline pt-1"
+                  className="flex items-center gap-1 text-[10px] font-medium text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200 pt-1"
                 >
-                  <Plus className="w-3 h-3" />
+                  <Plus className="w-2.5 h-2.5" />
                   <span>Add Subtask</span>
                 </button>
               )}
@@ -316,14 +288,14 @@ export const Card = ({ task, isDragging, onDragStart, onDragEnd }) => {
         </div>
       )}
 
-      {/* If no subtasks exist yet, provide a quick button to add one */}
+      {/* If no subtasks exist yet, clean action to add checklist */}
       {totalSubtasks === 0 && (
-        <div className="mt-2 pt-2 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between">
+        <div className="mt-2 pt-1.5 border-t border-zinc-100 dark:border-zinc-800/80">
           <button
             onClick={() => openEditModal(task)}
-            className="flex items-center gap-1 text-[11px] text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
+            className="flex items-center gap-1 text-[10px] text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-300 transition-colors"
           >
-            <Plus className="w-3 h-3" />
+            <Plus className="w-2.5 h-2.5" />
             <span>Add Checklist</span>
           </button>
         </div>

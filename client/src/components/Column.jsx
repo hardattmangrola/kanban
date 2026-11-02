@@ -1,27 +1,14 @@
 import React, { useState } from 'react';
 import { Card } from './Card.jsx';
 import { useTaskStore } from '../store/useTaskStore.js';
-import { Plus, CircleDashed, Clock, CheckCircle2 } from 'lucide-react';
+import { Button } from './ui/Button.jsx';
+import { Badge } from './ui/Badge.jsx';
+import { Plus } from 'lucide-react';
 
-const columnMeta = {
-  todo: {
-    title: 'To Do',
-    icon: <CircleDashed className="w-4 h-4 text-slate-500 dark:text-slate-400" />,
-    badgeBg: 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300',
-    accentBorder: 'border-t-slate-400 dark:border-t-slate-500',
-  },
-  'in-progress': {
-    title: 'In Progress',
-    icon: <Clock className="w-4 h-4 text-indigo-500 dark:text-indigo-400" />,
-    badgeBg: 'bg-indigo-50 dark:bg-indigo-950/80 text-indigo-700 dark:text-indigo-300',
-    accentBorder: 'border-t-indigo-500 dark:border-t-indigo-400',
-  },
-  done: {
-    title: 'Done',
-    icon: <CheckCircle2 className="w-4 h-4 text-emerald-500 dark:text-emerald-400" />,
-    badgeBg: 'bg-emerald-50 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-300',
-    accentBorder: 'border-t-emerald-500 dark:border-t-emerald-400',
-  },
+const columnTitles = {
+  todo: 'To Do',
+  'in-progress': 'In Progress',
+  done: 'Done',
 };
 
 export const Column = ({
@@ -35,12 +22,7 @@ export const Column = ({
   const [isDragOver, setIsDragOver] = useState(false);
   const [dropTargetPosition, setDropTargetPosition] = useState(null);
 
-  const meta = columnMeta[columnId] || {
-    title: columnId,
-    icon: null,
-    badgeBg: 'bg-slate-100',
-    accentBorder: 'border-t-slate-400',
-  };
+  const title = columnTitles[columnId] || columnId;
 
   const handleDragOver = (e) => {
     e.preventDefault();
@@ -49,7 +31,6 @@ export const Column = ({
   };
 
   const handleDragLeave = (e) => {
-    // Only deactivate if leaving the column element itself
     if (!e.currentTarget.contains(e.relatedTarget)) {
       setIsDragOver(false);
       setDropTargetPosition(null);
@@ -64,7 +45,6 @@ export const Column = ({
     const taskId = e.dataTransfer.getData('text/plain');
     if (!taskId) return;
 
-    // Default to putting at the end of the column if dropped on column container
     const newPosition = tasks.length;
     moveTask(taskId, columnId, newPosition);
   };
@@ -78,7 +58,6 @@ export const Column = ({
     const taskId = e.dataTransfer.getData('text/plain');
     if (!taskId) return;
 
-    // Drop before or at this card's index
     moveTask(taskId, columnId, index);
   };
 
@@ -87,40 +66,36 @@ export const Column = ({
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
       onDrop={handleDropOnColumn}
-      className={`flex flex-col h-full rounded-2xl bg-slate-100/70 dark:bg-slate-900/40 border border-slate-200/80 dark:border-slate-800/80 border-t-4 ${
-        meta.accentBorder
-      } p-4 transition-all duration-200 min-h-[580px] ${
+      className={`flex flex-col h-full rounded-xl bg-zinc-100/50 dark:bg-zinc-900/30 border border-zinc-200 dark:border-zinc-800/80 p-3 transition-colors min-h-[580px] ${
         isDragOver
-          ? 'ring-2 ring-indigo-500/50 bg-indigo-50/30 dark:bg-indigo-950/20'
+          ? 'ring-1 ring-zinc-400 dark:ring-zinc-600 bg-zinc-100 dark:bg-zinc-900/60'
           : ''
       }`}
     >
       {/* Column Header */}
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex items-center justify-between mb-3 px-1">
         <div className="flex items-center gap-2">
-          {meta.icon}
-          <h2 className="text-sm font-bold text-slate-800 dark:text-slate-100 tracking-tight">
-            {meta.title}
+          <h2 className="text-xs font-semibold text-zinc-900 dark:text-zinc-100 tracking-wide uppercase">
+            {title}
           </h2>
-          <span
-            className={`px-2 py-0.5 text-xs font-semibold rounded-full ${meta.badgeBg}`}
-          >
+          <Badge variant="secondary" className="font-mono text-[10px] px-1.5 py-0 h-4 min-w-4 flex items-center justify-center">
             {tasks.length}
-          </span>
+          </Badge>
         </div>
 
-        <button
+        <Button
+          variant="ghost"
+          size="icon"
           onClick={() => openCreateModal(columnId)}
-          className="p-1 rounded-lg text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-slate-200/60 dark:hover:bg-slate-800 transition-colors"
-          title={`Add task to ${meta.title}`}
-          aria-label={`Add task to ${meta.title}`}
+          className="h-6 w-6 text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100"
+          title={`Add task to ${title}`}
         >
-          <Plus className="w-4 h-4" />
-        </button>
+          <Plus className="w-3.5 h-3.5" />
+        </Button>
       </div>
 
       {/* Cards List / Drop Zone */}
-      <div className="flex-1 space-y-3 overflow-y-auto pr-0.5">
+      <div className="flex-1 space-y-2.5 overflow-y-auto pr-0.5">
         {tasks.map((task, index) => (
           <div
             key={task._id}
@@ -130,11 +105,10 @@ export const Column = ({
               setDropTargetPosition(index);
             }}
             onDrop={(e) => handleDropOnCard(e, index)}
-            className="transition-all"
           >
-            {/* Visual drop indicator line when dragging */}
+            {/* Visual drop target placeholder */}
             {isDragOver && dropTargetPosition === index && (
-              <div className="h-1 bg-indigo-500 rounded-full mb-2 animate-pulse" />
+              <div className="h-0.5 bg-zinc-900 dark:bg-zinc-100 rounded-full mb-2 opacity-80" />
             )}
 
             <Card
@@ -148,29 +122,30 @@ export const Column = ({
 
         {/* Empty state placeholder */}
         {tasks.length === 0 && (
-          <div className="flex flex-col items-center justify-center py-12 px-4 border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-xl text-center">
-            <p className="text-xs text-slate-400 dark:text-slate-500 mb-2">
-              No tasks in {meta.title}
+          <div className="flex flex-col items-center justify-center py-10 px-4 border border-dashed border-zinc-200 dark:border-zinc-800/80 rounded-lg text-center">
+            <p className="text-[11px] text-zinc-400 dark:text-zinc-500 mb-1.5">
+              No tasks
             </p>
             <button
               onClick={() => openCreateModal(columnId)}
-              className="inline-flex items-center gap-1 text-xs font-medium text-indigo-600 dark:text-indigo-400 hover:underline"
+              className="inline-flex items-center gap-1 text-[11px] font-medium text-zinc-600 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white"
             >
-              <Plus className="w-3.5 h-3.5" />
-              Add a card
+              <Plus className="w-3 h-3" />
+              Add task
             </button>
           </div>
         )}
       </div>
 
       {/* Bottom Quick Add Action */}
-      <button
+      <Button
+        variant="ghost"
         onClick={() => openCreateModal(columnId)}
-        className="mt-3 flex items-center justify-center gap-1.5 w-full py-2 px-3 text-xs font-medium text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-white dark:hover:bg-slate-800/80 rounded-xl border border-transparent hover:border-slate-200 dark:hover:border-slate-700/80 transition-all shadow-none hover:shadow-sm"
+        className="mt-2.5 w-full justify-center text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 text-xs font-normal border border-transparent hover:border-zinc-200 dark:hover:border-zinc-800"
       >
-        <Plus className="w-3.5 h-3.5" />
-        <span>Add card</span>
-      </button>
+        <Plus className="w-3.5 h-3.5 mr-1" />
+        <span>Add task</span>
+      </Button>
     </div>
   );
 };

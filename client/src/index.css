@@ -5,9 +5,6 @@
 @layer base {
   :root {
     color-scheme: light;
-    --theme-transition: background-color 0.25s cubic-bezier(0.4, 0, 0.2, 1),
-                        border-color 0.25s cubic-bezier(0.4, 0, 0.2, 1),
-                        color 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   }
   
   html.dark {
@@ -19,27 +16,27 @@
   }
 
   body {
-    @apply m-0 p-0 font-sans antialiased bg-slate-50 text-slate-900 transition-colors duration-200 selection:bg-indigo-500 selection:text-white;
+    @apply m-0 p-0 font-sans antialiased bg-zinc-50 text-zinc-900 transition-colors duration-150 selection:bg-zinc-900 selection:text-zinc-50;
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
   }
 
   html.dark body {
-    @apply bg-slate-950 text-slate-100 selection:bg-indigo-600 selection:text-white;
+    @apply bg-zinc-950 text-zinc-100 selection:bg-zinc-100 selection:text-zinc-950;
   }
 }
 
-/* Micro-interaction & Focus ring accessibility */
+/* Accessible focus rings */
 button:focus-visible,
 input:focus-visible,
 select:focus-visible,
 textarea:focus-visible {
-  @apply outline-none ring-2 ring-indigo-500 ring-offset-2 ring-offset-white dark:ring-offset-slate-950;
+  @apply outline-none ring-1 ring-zinc-950 dark:ring-zinc-300;
 }
 
-/* Clean Custom Scrollbar */
+/* Minimalist Custom Scrollbar */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 5px;
+  height: 5px;
 }
 
 ::-webkit-scrollbar-track {
@@ -47,18 +44,18 @@ textarea:focus-visible {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(148, 163, 184, 0.35);
+  background: rgba(161, 161, 170, 0.3);
   border-radius: 9999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(148, 163, 184, 0.65);
+  background: rgba(161, 161, 170, 0.6);
 }
 
 .dark ::-webkit-scrollbar-thumb {
-  background: rgba(71, 85, 105, 0.5);
+  background: rgba(82, 82, 91, 0.4);
 }
 
 .dark ::-webkit-scrollbar-thumb:hover {
-  background: rgba(100, 116, 139, 0.8);
+  background: rgba(113, 113, 122, 0.7);
 }

@@ -24,8 +24,8 @@ export const Board = () => {
   };
 
   return (
-    <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
+    <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-5 items-start">
         {COLUMNS.map((col) => {
           const colTasks = tasks
             .filter((task) => task.columnId === col.id)
