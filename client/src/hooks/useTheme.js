@@ -4,14 +4,15 @@ const THEME_STORAGE_KEY = 'taskflow_theme';
 
 /**
  * Custom Hook: useTheme
- * Single Responsibility: Manages theme state, localStorage synchronization,
- * and DOM class mutations with zero flicker.
+ * Adheres to Single Responsibility Principle:
+ * Manages theme state, system preference listeners, localStorage persistence,
+ * and DOM class updates with zero visual flicker.
  */
 export const useTheme = () => {
   const [theme, setTheme] = useState(() => {
     try {
       const stored = localStorage.getItem(THEME_STORAGE_KEY);
-      if (stored) return stored;
+      if (stored === 'dark' || stored === 'light') return stored;
       return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
     } catch {
       return 'light';
@@ -29,9 +30,23 @@ export const useTheme = () => {
     try {
       localStorage.setItem(THEME_STORAGE_KEY, theme);
     } catch (err) {
-      console.warn('Unable to persist theme to localStorage', err);
+      console.warn('[Theme Engine] Unable to persist theme in localStorage:', err);
     }
   }, [theme]);
+
+  // Listen to OS system theme changes if user hasn't set an explicit override
+  useEffect(() => {
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    const handleSystemThemeChange = (e) => {
+      const stored = localStorage.getItem(THEME_STORAGE_KEY);
+      if (!stored) {
+        setTheme(e.matches ? 'dark' : 'light');
+      }
+    };
+
+    mediaQuery.addEventListener('change', handleSystemThemeChange);
+    return () => mediaQuery.removeEventListener('change', handleSystemThemeChange);
+  }, []);
 
   const toggleTheme = () => {
     setTheme((prev) => (prev === 'dark' ? 'light' : 'dark'));
