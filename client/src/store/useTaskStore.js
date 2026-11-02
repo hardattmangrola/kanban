@@ -8,6 +8,9 @@ import { taskApi } from '../services/api.js';
  * and rapid interaction guards.
  */
 
+// Serialized FIFO Promise queue to prevent out-of-order API persistence
+let sequentialMoveQueue = Promise.resolve();
+
 export const useTaskStore = create((set, get) => ({
   tasks: [],
   isLoading: false,
@@ -32,7 +35,9 @@ export const useTaskStore = create((set, get) => ({
   setSimulateError: (value) => {
     set({ simulateError: value });
     get().showToast(
-      value ? 'Simulated 500 Error ENABLED (Next drag will fail & rollback)' : 'Simulated Error Disabled (Normal API persistence)',
+      value
+        ? 'Simulated 500 Error ENABLED (Next drag will fail & rollback)'
+        : 'Simulated Error Disabled (Normal API persistence)',
       value ? 'warning' : 'info'
     );
   },
@@ -73,8 +78,8 @@ export const useTaskStore = create((set, get) => ({
   /**
    * Fetch all tasks from backend
    */
-  fetchTasks: async () => {
-    set({ isLoading: true, error: null });
+  fetchTasks: async (silent = false) => {
+    if (!silent) set({ isLoading: true, error: null });
     try {
       const response = await taskApi.getAllTasks();
       // Ensure sorted order by column and position
@@ -84,10 +89,12 @@ export const useTaskStore = create((set, get) => ({
         }
         return a.columnId.localeCompare(b.columnId);
       });
-      set({ tasks: sorted, isLoading: false });
+      set({ tasks: sorted, isLoading: false, error: null });
     } catch (err) {
       set({ error: err.message, isLoading: false });
-      get().showToast(`Failed to load tasks: ${err.message}`, 'error');
+      if (!silent) {
+        get().showToast(`Failed to load tasks: ${err.message}`, 'error');
+      }
     }
   },
 
@@ -163,7 +170,7 @@ export const useTaskStore = create((set, get) => ({
   /**
    * OPTIMISTIC UI MOVE & RACE CONDITION DEFENSE
    * Moves a card within or across columns with instant client state update,
-   * snapshot rollback resilience, and rapid interaction guards.
+   * snapshot rollback resilience, and rapid interaction guards via FIFO promise queue.
    */
   moveTask: async (taskId, destinationColumn, destinationPosition) => {
     const state = get();
@@ -181,7 +188,7 @@ export const useTaskStore = create((set, get) => ({
       return;
     }
 
-    // 1. Snapshot previous state for graceful rollback
+    // 1. Immutable snapshot of previous state for graceful rollback
     const snapshotTasks = JSON.parse(JSON.stringify(currentTasks));
     const currentMoveVersion = state.moveVersion + 1;
 
@@ -236,35 +243,45 @@ export const useTaskStore = create((set, get) => ({
       inFlightMoves: state.inFlightMoves + 1,
     });
 
-    // 3. Dispatch atomic persistence to server in background
-    try {
-      await taskApi.moveTask(
-        taskId,
-        {
-          destinationColumn: targetColumn,
-          destinationPosition: targetPosition,
-          sourceColumn,
-          sourcePosition,
-        },
-        state.simulateError
-      );
+    // 3. RAPID INTERACTION GUARD: Enqueue API call through sequential FIFO queue
+    sequentialMoveQueue = sequentialMoveQueue
+      .then(async () => {
+        try {
+          await taskApi.moveTask(
+            taskId,
+            {
+              destinationColumn: targetColumn,
+              destinationPosition: targetPosition,
+              sourceColumn,
+              sourcePosition,
+            },
+            get().simulateError
+          );
 
-      // Decrement in-flight counter
-      set((s) => ({ inFlightMoves: Math.max(0, s.inFlightMoves - 1) }));
-    } catch (err) {
-      // 4. GRACEFUL ROLLBACK ON FAILURE
-      console.warn('[Optimistic Move Failed] Rolling back card position:', err.message);
-      
-      set({
-        tasks: snapshotTasks,
-        inFlightMoves: Math.max(0, get().inFlightMoves - 1),
+          // Decrement in-flight counter
+          set((s) => ({ inFlightMoves: Math.max(0, s.inFlightMoves - 1) }));
+        } catch (err) {
+          // 4. GRACEFUL ROLLBACK ON FAILURE
+          console.warn('[Optimistic Move Failed] Gracefully rolling back card position:', err.message);
+
+          // Revert to snapshot
+          set({
+            tasks: snapshotTasks,
+            inFlightMoves: Math.max(0, get().inFlightMoves - 1),
+          });
+
+          get().showToast(
+            `Move failed: ${err.message || 'Network error'}. State restored.`,
+            'error'
+          );
+        }
+      })
+      .catch((queueErr) => {
+        console.error('[Sequential Move Queue Error]:', queueErr);
+        set((s) => ({ inFlightMoves: Math.max(0, s.inFlightMoves - 1) }));
       });
 
-      get().showToast(
-        `Move failed: ${err.message || 'Network error'}. State restored.`,
-        'error'
-      );
-    }
+    return sequentialMoveQueue;
   },
 
   /**
