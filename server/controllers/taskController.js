@@ -212,18 +212,20 @@ export const moveTask = async (req, res, next) => {
       });
     }
 
-    // Execute atomic bulkWrite operation
+    // Execute atomic bulkWrite operation in a single roundtrip
     if (bulkOperations.length > 0) {
       await Task.bulkWrite(bulkOperations);
     }
 
-    // Fetch the updated task
-    const updatedTask = await Task.findById(id);
-
+    // Return immediate success response without redundant 3rd DB query
     res.status(200).json({
       success: true,
       message: 'Task moved atomically and successfully',
-      data: updatedTask,
+      data: {
+        _id: id,
+        columnId: targetCol,
+        position: targetPos,
+      },
     });
   } catch (error) {
     next(error);
