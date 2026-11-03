@@ -2,9 +2,15 @@
 
 TaskFlow is a production-grade, highly resilient Kanban Board Application built with the **MERN Stack** (MongoDB, Express, React, Node.js) and styled with **Tailwind CSS**. It emphasizes **SOLID architectural principles**, clean modular JavaScript (ES6+), **atomic database persistence**, **optimistic UI updates with instant rollback**, and **zero-flicker theme persistence**.
 
+![ui](public/ui.png)
+
 ---
 
-## 🚀 Key Highlights & Architectural Features
+## Architecture Diagram:
+![arch](public/arch.png)
+
+
+##  Key Highlights & Architectural Features
 
 1. **Atomic Persistence & Bulk Operations**:
    - Reordering and cross-column card moves use MongoDB `bulkWrite` with `$inc` and `$set` atomic operators rather than naive array overwrites, preventing race conditions and index corruption.
@@ -23,7 +29,7 @@ TaskFlow is a production-grade, highly resilient Kanban Board Application built 
 
 ---
 
-## 📁 Project Architecture & Directory Structure
+##  Project Architecture & Directory Structure
 
 ```text
 kanban/
@@ -78,7 +84,7 @@ kanban/
 
 ---
 
-## ⚡ Quick Start & Run Instructions
+##  Quick Start & Run Instructions
 
 ### 1. Prerequisites
 - **Node.js**: v18.0.0 or higher (v22.x recommended)
@@ -128,7 +134,7 @@ npm run dev
 
 ---
 
-## 🧪 Evaluator Verification Guide
+##  Evaluator Verification Guide
 
 ### 1. Testing Optimistic UI & Graceful Rollback
 1. Open the app in your browser at [http://localhost:5173](http://localhost:5173).
@@ -155,7 +161,7 @@ npm run dev
 
 ---
 
-## 📡 REST API Reference
+##  REST API Reference
 
 | Method | Endpoint | Description |
 | :--- | :--- | :--- |
@@ -171,7 +177,7 @@ npm run dev
 
 ---
 
-## 🌿 Git Branching Strategy & Conventions
+##  Git Branching Strategy & Conventions
 
 The repository follows a strict Git feature-branch workflow merged into `main`:
 - `feature/kanban-crud`: Mongoose schemas, database seeder, REST API, board layout, and CRUD operations.
