@@ -122,10 +122,10 @@ export const TaskModal = () => {
       role="dialog"
       aria-modal="true"
     >
-      <div className="bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl shadow-xl max-w-md w-full overflow-hidden">
+      <div className="bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl shadow-xl max-w-md w-full max-h-[92vh] flex flex-col overflow-hidden">
         
         {/* Header */}
-        <div className="flex items-center justify-between px-5 py-3.5 border-b border-zinc-100 dark:border-zinc-800">
+        <div className="flex items-center justify-between px-5 py-3.5 border-b border-zinc-100 dark:border-zinc-800 shrink-0">
           <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
             {editingTask ? 'Edit Task' : 'New Task'}
           </h2>
@@ -141,7 +141,7 @@ export const TaskModal = () => {
         </div>
 
         {/* Form Body */}
-        <form onSubmit={handleSubmit} className="p-5 space-y-3.5">
+        <form onSubmit={handleSubmit} className="p-5 space-y-3.5 overflow-y-auto flex-1">
           {errorMsg && (
             <div className="p-2.5 text-xs text-rose-600 dark:text-rose-400 bg-rose-500/10 border border-rose-500/20 rounded-md">
               {errorMsg}

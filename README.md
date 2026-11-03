@@ -7,6 +7,7 @@ TaskFlow is a production-grade, highly resilient Kanban Board Application built 
 ---
 
 ## Architecture Diagram:
+
 ![arch](public/arch.png)
 
 
